@@ -10,6 +10,9 @@ contract RedditNameSpace is ChainlinkClient {
 
     using Chainlink for Chainlink.Request;
 
+    bytes32 public data;
+    uint public MonthEruption;
+
     address public currentOracleAddress;
     string public currentRedditUsername;
     string public urlRebuiltJSON;
@@ -28,14 +31,6 @@ contract RedditNameSpace is ChainlinkClient {
     mapping(address => string) AddressKeyUsernameLookup;
     mapping(string => address) UsernameKeyAddressLookup;
 
-    function Step1OracleCallRedditJSON(string memory _userNameURL) public {
-        require(bytes(_userNameURL).length <= 32, "NAME_OVER_32_CHARACTERS!");
-        require(tokenObject.balanceOf(address(this)) >= 2*(10*16), "CONTRACT_NEEDS_0.02_LINK!");
-        urlRebuiltJSON = string(abi.encodePacked("https://www.reddit.com/user/",_userNameURL,".json") );
-        // request_Address();
-        request_Username();
-    }
-
     function Step2VerifyRNS() public {
         require(keccak256(bytes(currentRedditUsername)) != keccak256(bytes("0")), "USERNAME_VALUE_NOT_SET!");
         require(UsernameKeyAddressLookup[currentRedditUsername] == 0x0000000000000000000000000000000000000000, "USERNAME_ALREADY_TAKEN.");
@@ -52,42 +47,42 @@ contract RedditNameSpace is ChainlinkClient {
         return UsernameKeyAddressLookup[_stringLookup];
     }
 
-    // function request_Address() private returns (bytes32 requestId) {
-    //     Chainlink.Request memory request = buildChainlinkRequest(jobIdGetBytes32, address(this), this.fulfill_Address.selector);
-    //     request.add("get", urlRebuiltJSON);
-    //     request.add("path", "data.children.0.data.title");
-    //     return sendChainlinkRequestTo(oracle, request, fee);
-    // }
-
-    // function fulfill_Address(bytes32 _requestId, bytes32 _currentOracleAddress) public recordChainlinkFulfillment(_requestId)
-    // {
-    //     addressPartOne = _currentOracleAddress;
-    //     // currentOracleAddress = address(uint160(uint256(_currentOracleAddress)));
-    // }
-
-    function request_Username() private returns (bytes32 requestId) {
-        Chainlink.Request memory request = buildChainlinkRequest(jobIdGetBytes32, address(this), this.fulfill_Username.selector);
-        request.add("get", urlRebuiltJSON);
-        request.add("path", "data.children.0.data.author");
+    function request_Address() private returns (bytes32 requestId) {
+        Chainlink.Request memory request = buildChainlinkRequest(jobIdGetBytes32, address(this), this.fulfill_Address.selector);
+        request.add("get", "https://www.reddit.com/user/singularityyear2045.json");
+        // request.add("path", "data.children.0.data.title");
+        request.add("path", "kind");
         return sendChainlinkRequestTo(oracle, request, fee);
     }
 
-    function fulfill_Username(bytes32 _requestId, bytes32 _currentRedditUsername) public recordChainlinkFulfillment(_requestId)
+    function fulfill_Address(bytes32 _requestId, bytes32 _currentOracleAddress) public recordChainlinkFulfillment(_requestId)
     {
-        hexUsername = _currentRedditUsername;
-        // currentRedditUsername = bytes32ToString(_currentRedditUsername);
+        addressPartOne = _currentOracleAddress;
+        // currentOracleAddress = address(uint160(uint256(_currentOracleAddress)));
     }
 
-    // function bytes32ToString(bytes32 _bytes32) private pure returns (string memory) { //CREDIT https://ethereum.stackexchange.com/questions/2519/how-to-convert-a-bytes32-to-string/2834
-    //     uint8 i = 0;
-    //     while(i < 32 && _bytes32[i] != 0) {
-    //         i++;
-    //     }
-    //     bytes memory bytesArray = new bytes(i);
-    //     for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
-    //         bytesArray[i] = _bytes32[i];
-    //     }
-    //     return string(bytesArray);
+    // function request_Username() private returns (bytes32 requestId) {
+    //     Chainlink.Request memory request = buildChainlinkRequest(jobIdGetBytes32, address(this), this.fulfill_Username.selector);
+    //     request.add("get", "https://www.reddit.com/user/singularityyear2045.json");
+    //     // request.add("path", "data.children.0.data.author");
+    //     return sendChainlinkRequestTo(oracle, request, fee);
     // }
+
+    // function fulfill_Username(bytes32 _requestId, bytes32 _currentRedditUsername) public recordChainlinkFulfillment(_requestId)
+    // {
+    //     hexUsername = _currentRedditUsername;
+    //     // currentRedditUsername = bytes32ToString(_currentRedditUsername);
+    // }
+
+    function requestFruit() private returns (bytes32 requestId)  {
+    Chainlink.Request memory request = buildChainlinkRequest(jobIdGetBytes32, address(this), this.fulfillBytes.selector);
+    request.add("get","https://filesamples.com/samples/code/json/sample1.json");
+    request.add("path", "fruit");
+    return sendChainlinkRequestTo(oracle, request, fee);
+    }
+
+    function fulfillBytes(bytes32 requestId, bytes32 bytesData) public recordChainlinkFulfillment(requestId) {
+    data = bytesData;
+      }
 
 }
