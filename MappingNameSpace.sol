@@ -6,11 +6,12 @@ contract MappingNameSpace {
     mapping(address => string) AddressKeyUsernameLookup;
     mapping(string => address) UsernameKeyAddressLookup;
 
-    function Claim_MNS(string memory intputString) public {
-        require(keccak256(bytes(intputString)) != keccak256(bytes("0")), "USERNAME_VALUE_CANNOT_BE_0.");
-        require(UsernameKeyAddressLookup[intputString] == 0x0000000000000000000000000000000000000000, "USERNAME_ALREADY_TAKEN.");
-        AddressKeyUsernameLookup[msg.sender] = intputString;
-        UsernameKeyAddressLookup[intputString] = msg.sender;
+    function Claim_MNS(string memory inputString) public {
+        require(keccak256(bytes(inputString)) != keccak256(bytes("0")), "USERNAME_VALUE_CANNOT_BE_0.");
+        require(UsernameKeyAddressLookup[inputString] == 0x0000000000000000000000000000000000000000, "USERNAME_ALREADY_TAKEN.");
+        require(bytes(AddressKeyUsernameLookup[msg.sender]).length == 0, "CANNOT_CHANGE_YOUR_NAME!");
+        AddressKeyUsernameLookup[msg.sender] = inputString;
+        UsernameKeyAddressLookup[inputString] = msg.sender;
     }    
 
     function User_MNS() public view returns(string memory) {
